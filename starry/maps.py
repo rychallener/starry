@@ -1755,11 +1755,14 @@ class YlmBase(legacy.YlmBase):
         lon0 = 3 * np.pi / 2
         lon = lon0 + np.pi * x / (2 * np.sqrt(2) * np.cos(theta))
 
-        # Add points at the poles
-        lat = np.append(lat, [-np.pi / 2, 0, 0, np.pi / 2])
-        lon = np.append(
-            lon, [1.5 * np.pi, 1.5 * np.pi, 2.5 * np.pi, 1.5 * np.pi]
-        )
+        # Add points at the poles if not included
+        if -np.pi / 2 not in lat:
+            lat = np.append(lat, [-np.pi / 2])
+            lon = np.append(lon, [1.5 * np.pi])
+        if  np.pi / 2 not in lat:
+            lat = np.append(lat, [ np.pi / 2])
+            lon = np.append(lon, [1.5 * np.pi])
+        npix = len(lat)
         npix = len(lat)
 
         # Back to Cartesian, this time on the *sky*
@@ -1796,7 +1799,7 @@ class YlmBase(legacy.YlmBase):
         Dy = np.zeros((npix, npix))
         for i in range(npix):
 
-            # Get the relative x, y coords of the 10 closest points
+            # Get the relative x, y coords of the 8 closest points
             y_ = (lat - lat[i]) * np.pi / 180
             x_ = (
                 np.cos(0.5 * (lat + lat[i]) * np.pi / 180)
@@ -1805,12 +1808,12 @@ class YlmBase(legacy.YlmBase):
                 / 180
             )
             idx = np.argsort(x_ ** 2 + y_ ** 2)
-            x = x_[idx[:10]]
-            y = y_[idx[:10]]
+            x = x_[idx[:8]]
+            y = y_[idx[:8]]
 
             # Require at least one point to be at a different latitude
             j = np.argmax(np.abs(lat[idx] - lat[idx[0]]) > 1e-4)
-            if j >= 10:
+            if j >= 8:
                 # TODO: untested!
                 x[-1] = x_[idx[j]]
                 y[-1] = y_[idx[j]]
@@ -1820,7 +1823,7 @@ class YlmBase(legacy.YlmBase):
             # centered on the current point
             X = np.vstack(
                 (
-                    np.ones(10),
+                    np.ones(8),
                     x,
                     y,
                     x ** 2,
@@ -1829,15 +1832,15 @@ class YlmBase(legacy.YlmBase):
                     x ** 3,
                     x ** 2 * y,
                     x * y ** 2,
-                    x ** 3,
+                    y ** 3,
                 )
             ).T
-            A = np.linalg.solve(X.T.dot(X) + eps * np.eye(10), X.T)
+            A = np.linalg.solve(X.T.dot(X) + eps * np.eye(8), X.T)
 
             # Since we're centered at the origin, the derivatives
             # are just the coefficients of the linear terms.
-            Dx[i, idx[:10]] = A[1]
-            Dy[i, idx[:10]] = A[2]
+            Dx[i, idx[:8]] = A[1]
+            Dy[i, idx[:8]] = A[2]
 
         return (
             lat / self._angle_factor,
