@@ -206,17 +206,18 @@ setup(
     },
     install_requires=[
         "setuptools_scm",
-        "numpy>=1.19.2",
-        "scipy>=1.5.0",
+        "numpy>=1.19.2,<=1.21.6",
+        "scipy>=1.5.0,<=1.7.3",
         "astropy>=3.1",
         "pymc3",
         "pymc3-ext",
         "aesara-theano-fallback>=0.0.4",
         "matplotlib>=3.2.2",
         "ipython",
-        "exoplanet>=0.4.5",
+        "exoplanet>=0.4.5,<=0.5.3",
         "bokeh",
         "packaging",
+        "xarray<=2023.7.0",
     ],
     extras_require={
         "tests": [
