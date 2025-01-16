@@ -1835,7 +1835,7 @@ class YlmBase(legacy.YlmBase):
                     y ** 3,
                 )
             ).T
-            A = np.linalg.solve(X.T.dot(X) + eps * np.eye(8), X.T)
+            A = np.linalg.solve(X.T.dot(X) + eps * np.eye(10), X.T)
 
             # Since we're centered at the origin, the derivatives
             # are just the coefficients of the linear terms.
